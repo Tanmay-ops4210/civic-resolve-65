@@ -162,7 +162,7 @@ export default function Login() {
               <p className="text-xs font-medium text-muted-foreground mb-2">Demo Credentials:</p>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p><strong>Citizen:</strong> citizen@thane.gov.in / citizen123</p>
-                <p><strong>Admin:</strong> admin@thane.gov.in / admin123</p>
+                <p><strong>Admin:</strong> berosgang@gmail.com / TAM123888</p>
               </div>
             </div>
           </CardContent>
