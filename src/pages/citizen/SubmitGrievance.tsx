@@ -101,7 +101,7 @@ export default function SubmitGrievance() {
       imageUrl: imagePreview || undefined,
       latitude: selectedLocation.lat,
       longitude: selectedLocation.lng,
-    } as any);
+    });
 
     setSubmittedId(newGrievance.trackingId);
     setIsSubmitting(false);

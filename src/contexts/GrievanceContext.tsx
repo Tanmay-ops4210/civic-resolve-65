@@ -15,6 +15,8 @@ export interface Grievance {
   status: GrievanceStatus;
   priority: Priority;
   imageUrl?: string;
+  latitude?: number;
+  longitude?: number;
   createdAt: Date;
   updatedAt: Date;
   assignedTo?: string;
@@ -57,6 +59,10 @@ const generateMockGrievances = (): Grievance[] => {
     const ward = THANE_WARDS[Math.floor(Math.random() * THANE_WARDS.length)];
     const createdAt = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
     
+    // Thane coordinates approximate range
+    const latitude = 19.15 + Math.random() * 0.15;
+    const longitude = 72.95 + Math.random() * 0.1;
+    
     mockData.push({
       id: `grievance-${i}`,
       trackingId: `TMC${String(2024001 + i).padStart(7, '0')}`,
@@ -67,6 +73,8 @@ const generateMockGrievances = (): Grievance[] => {
       description: `Issue regarding ${category.replace('-', ' ')} in ${ward} ward. Requires immediate attention.`,
       status,
       priority: priorities[Math.floor(Math.random() * priorities.length)],
+      latitude,
+      longitude,
       createdAt,
       updatedAt: new Date(createdAt.getTime() + Math.random() * 5 * 24 * 60 * 60 * 1000),
       assignedTo: status !== 'pending' ? 'Municipal Officer' : undefined,
@@ -136,6 +144,8 @@ export function GrievanceProvider({ children }: { children: ReactNode }) {
       status: 'pending',
       priority: 'medium',
       imageUrl: data.imageUrl,
+      latitude: data.latitude,
+      longitude: data.longitude,
       createdAt: new Date(),
       updatedAt: new Date(),
       timeline: [{
