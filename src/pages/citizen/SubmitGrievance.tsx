@@ -18,6 +18,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import GrievanceMap from '@/components/ui/GrievanceMap';
 
 export default function SubmitGrievance() {
   const { user } = useAuth();
@@ -30,10 +31,15 @@ export default function SubmitGrievance() {
     ward: '',
     description: '',
   });
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,6 +78,15 @@ export default function SubmitGrievance() {
       return;
     }
 
+    if (!selectedLocation) {
+      toast({
+        title: "Location Required",
+        description: "Please pinpoint the location on the map.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Simulate API call
@@ -84,7 +99,9 @@ export default function SubmitGrievance() {
       ward: formData.ward,
       description: formData.description,
       imageUrl: imagePreview || undefined,
-    });
+      latitude: selectedLocation.lat,
+      longitude: selectedLocation.lng,
+    } as any);
 
     setSubmittedId(newGrievance.trackingId);
     setIsSubmitting(false);
@@ -180,6 +197,20 @@ export default function SubmitGrievance() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Exact Location Map */}
+              <div className="space-y-2">
+                <Label>Pinpoint Exact Location *</Label>
+                <GrievanceMap 
+                  onLocationSelect={handleLocationSelect} 
+                  selectedLocation={selectedLocation} 
+                />
+                {selectedLocation && (
+                  <p className="text-xs text-muted-foreground">
+                    Selected: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
+                  </p>
+                )}
               </div>
 
               {/* Description */}
