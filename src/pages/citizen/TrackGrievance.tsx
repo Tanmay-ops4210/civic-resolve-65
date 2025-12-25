@@ -165,7 +165,78 @@ export default function TrackGrievance() {
                   <CardDescription>Track the progress of your complaint</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative">
+                  <div className="relative pt-8 pb-4">
+                    {/* Progress Bar Background */}
+                    <div className="absolute top-[3.25rem] left-[10%] right-[10%] h-1 bg-muted" />
+                    
+                    {/* Active Progress Bar */}
+                    <div 
+                      className="absolute top-[3.25rem] left-[10%] h-1 bg-primary transition-all duration-1000" 
+                      style={{ 
+                        width: grievance.status === 'pending' ? '0%' : 
+                               grievance.status === 'in-progress' ? '40%' : '80%' 
+                      }} 
+                    />
+
+                    <div className="relative flex justify-between items-start">
+                      {/* Step 1: Submitted */}
+                      <div className="flex flex-col items-center gap-3 w-1/3">
+                        <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
+                          ['pending', 'in-progress', 'resolved', 'escalated'].includes(grievance.status)
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-muted bg-background text-muted-foreground'
+                        }`}>
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs font-bold text-foreground">Submitted</p>
+                          <p className="text-[10px] text-muted-foreground">{grievance.createdAt.toLocaleDateString()}</p>
+                        </div>
+                      </div>
+
+                      {/* Step 2: In Progress */}
+                      <div className="flex flex-col items-center gap-3 w-1/3">
+                        <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all ${
+                          ['in-progress', 'resolved', 'escalated'].includes(grievance.status)
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : grievance.status === 'pending'
+                            ? 'border-amber-500 bg-amber-50 text-amber-600 animate-pulse'
+                            : 'border-muted bg-background text-muted-foreground'
+                        }`}>
+                          <Clock className="h-5 w-5" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs font-bold text-foreground">In Progress</p>
+                          {grievance.timeline.find(e => e.status === 'in-progress') && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {grievance.timeline.find(e => e.status === 'in-progress')?.timestamp.toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Step 3: Resolved */}
+                      <div className="flex flex-col items-center gap-3 w-1/3">
+                        <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
+                          grievance.status === 'resolved'
+                            ? 'border-emerald-500 bg-emerald-500 text-white'
+                            : 'border-muted bg-background text-muted-foreground'
+                        }`}>
+                          <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs font-bold text-foreground">Resolved</p>
+                          {grievance.status === 'resolved' && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {grievance.timeline.find(e => e.status === 'resolved')?.timestamp.toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative mt-8">
                     <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
                     <div className="space-y-6">
                       {grievance.timeline.map((event, index) => (

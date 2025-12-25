@@ -150,9 +150,18 @@ export function CitizenLayout({ children }: CitizenLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-6 mb-20 md:mb-6">
         {children}
       </main>
+
+      {/* Floating Action Button for Mobile */}
+      <Link 
+        to="/citizen/submit" 
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-primary hover:scale-105 transition-transform flex items-center justify-center text-primary-foreground z-[100] md:hidden"
+        data-testid="fab-submit-grievance"
+      >
+        <PlusCircle className="h-7 w-7" />
+      </Link>
 
       {/* Footer */}
       <footer className="border-t bg-card py-6 mt-auto">

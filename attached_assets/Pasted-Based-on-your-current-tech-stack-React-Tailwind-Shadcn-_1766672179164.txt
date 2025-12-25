@@ -1,0 +1,75 @@
+Based on your current tech stack (React, Tailwind, Shadcn UI) and the "Civic Resolve" theme, here are specific UI Design suggestions you can prototype in Canva and then build.
+
+These designs focus on making the app look modern, trustworthy, and engaging.
+
+1. The "Before & After" Resolution Card
+Instead of just showing "Resolved," visually prove the work is done. This is excellent for the Complaint History or a public "Impact Feed."
+
+Visual Concept: A card split in half (or with a slider).
+
+Left Side: Photo of the issue (e.g., Pothole) with a red "Reported" tag.
+
+Right Side: Photo of the fix (e.g., Repaired Road) with a green "Resolved" tag.
+
+Canva Design Tip: Use a "Compare" layout. Add a timestamp on both sides (e.g., "Oct 10" vs "Oct 12") to show speed.
+
+Code Implementation: Use aspect-ratio in Tailwind to keep images uniform.
+
+2. The "Visual" Status Timeline
+Your TrackGrievance page likely lists status updates. Make it a visual journey.
+
+Visual Concept: A horizontal or vertical "Stepper."
+
+Step 1 (Submitted): Blue Check.
+
+Step 2 (In Progress): An animated pulsing orange circle (indicates activity).
+
+Step 3 (Resolved): A solid Green trophy or checkmark.
+
+Canva Design Tip: Search for "Infographic Timeline" elements. Use icons like Clipboard -> Worker -> Checkmark.
+
+3. Glassmorphism Map Overlay
+For the map feature we discussed, don't just put a map on a white background.
+
+Visual Concept: floating "Control Panel" over the map.
+
+The Map takes up the full screen background.
+
+The "Filter" options (Water, Roads, Garbage) are in a frosted glass box floating on the top-left.
+
+Why: It looks premium (like Apple Maps or high-end dashboards).
+
+Tailwind Class: bg-white/30 backdrop-blur-md border border-white/20 shadow-lg rounded-xl.
+
+4. Gamification "Citizen Badges"
+To make the "Leaderboard" or "Profile" interesting, design 3D-style badges.
+
+Visual Concept:
+
+"Guardian of Green": For reporting garbage/tree issues.
+
+"Road Warrior": For reporting potholes.
+
+"Civic Hero": For 10+ verified reports.
+
+Canva Design Tip: Search for "3D Icon Badges" or "Achievement Badges."
+
+UI Placement: Display these prominently on the CitizenDashboard next to the user's name.
+
+5. Mobile "Floating Action Button" (FAB)
+Since citizens will use this on phones while walking outside:
+
+Visual Concept: A large, circular button fixed at the bottom-center of the screen with a generic "Plus" (+) icon or a Camera icon.
+
+Action: Pressing it immediately opens the "Submit Grievance" camera view.
+
+Canva Design Tip: Design a button with a subtle "Glow" or "Shadow" effect to make it look clickable.
+
+Tailwind Class: fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-primary hover:scale-105 transition-transform.
+
+Summary of What to Design in Canva First:
+Badge Icons: (Gold/Silver/Bronze styles).
+
+Map Pin Icons: Custom pins for different categories (Drop of water for 'Water Supply', Traffic Cone for 'Roads').
+
+Hero Banner: A clean illustration of a futuristic/clean city for your Index.tsx landing page.

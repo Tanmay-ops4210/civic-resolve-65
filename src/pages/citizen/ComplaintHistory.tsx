@@ -13,7 +13,8 @@ import {
   FileText,
   ArrowRight,
   Calendar,
-  MapPin
+  MapPin,
+  CheckCircle2
 } from 'lucide-react';
 
 export default function ComplaintHistory() {
@@ -106,6 +107,28 @@ export default function ComplaintHistory() {
                           {getCategoryLabel(grievance.category)}
                         </span>
                       </div>
+                      
+                      {grievance.status === 'resolved' && (
+                        <div className="grid grid-cols-2 gap-4 my-4">
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-destructive bg-destructive/10 px-2 py-0.5 rounded">Reported</span>
+                            <div className="aspect-video rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
+                              {grievance.imageUrl ? (
+                                <img src={grievance.imageUrl} alt="Before" className="w-full h-full object-cover" />
+                              ) : (
+                                <FileText className="h-8 w-8 text-muted-foreground/50" />
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Resolved</span>
+                            <div className="aspect-video rounded-lg overflow-hidden border bg-emerald-50 flex items-center justify-center">
+                              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <p className="text-sm text-foreground line-clamp-2">
                         {grievance.description}
                       </p>
