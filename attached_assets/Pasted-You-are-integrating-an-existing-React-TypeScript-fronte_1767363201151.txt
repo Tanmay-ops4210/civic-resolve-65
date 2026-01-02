@@ -1,0 +1,231 @@
+You are integrating an existing React + TypeScript frontend with a completed Node.js + Express backend for a municipal grievance system named Civic Resolve.
+
+⚠️ IMPORTANT – READ CAREFULLY
+The attached documentation files:
+
+PROJECT_SUMMARY.md
+
+FRONTEND_INTEGRATION.md
+
+README.md
+
+SETUP.md
+
+define the ENTIRE backend architecture, API contracts, authentication flow, WebSocket events, and role-based rules.
+
+✅ You MUST strictly follow ONLY what is defined in these .md files.
+❌ Do NOT assume, invent, rename, or modify any endpoint, payload, token name, role, or event beyond what is documented.
+
+🚫 ABSOLUTE RULES (NON-NEGOTIABLE)
+
+❌ Do NOT change UI design
+
+❌ Do NOT modify layout, Tailwind classes, styling, or visual components
+
+❌ Do NOT rename routes or pages
+
+❌ Do NOT add new pages or components
+
+❌ Do NOT refactor UI code
+
+✅ ONLY update logic, data flow, context providers, API calls, and services
+
+If any UI/styling/layout is changed, the task is FAILED.
+
+🌐 BACKEND CONFIGURATION (FROM MD FILES)
+
+API Base URL: http://localhost:5001/api
+
+WebSocket Server: http://localhost:5001
+
+Authentication: JWT
+
+JWT Storage Key: auth_token
+
+User Storage Key: grievance_user
+
+Roles: citizen, admin
+
+Database: PostgreSQL (backend only)
+
+Real-time: Socket.io (JWT-authenticated)
+
+🧩 STEP 1: AUTHENTICATION INTEGRATION
+File to update:
+
+src/contexts/AuthContext.tsx
+
+Required actions:
+
+Remove all mock authentication logic
+
+Implement real API calls using endpoints defined in .md files
+
+Login:
+
+Endpoint: POST /api/auth/login
+
+Request body: { email, password }
+
+On success:
+
+Store JWT in localStorage as auth_token
+
+Store user object in localStorage as grievance_user
+
+User object must include:
+
+id
+
+name
+
+email
+
+role
+
+ward
+
+phone
+
+Validate and enforce role (admin vs citizen)
+
+Register:
+
+Endpoint: POST /api/auth/register
+
+After successful registration, automatically log in the user
+
+🧩 STEP 2: CENTRALIZED API UTILITY
+Create file:
+
+src/lib/api.ts
+
+Requirements:
+
+Use ONLY fetch
+
+Automatically attach JWT token from localStorage
+
+Add header:
+
+Authorization: Bearer <auth_token>
+
+
+Handle JSON requests consistently
+
+Components must NOT manually attach headers
+
+🧩 STEP 3: GRIEVANCE MANAGEMENT INTEGRATION
+Files to update:
+
+src/contexts/GrievanceContext.tsx
+
+Any components using mock grievance data
+
+Replace ALL mock/static data with API calls:
+Create grievance:
+
+Endpoint: POST /api/grievances
+
+Type: multipart/form-data
+
+Fields:
+
+category
+
+ward
+
+description
+
+priority
+
+latitude
+
+longitude
+
+image (optional)
+
+Fetch grievances:
+
+Endpoint: GET /api/grievances
+
+Citizen: fetch only their own grievances
+
+Admin: fetch all grievances
+
+Track grievance:
+
+Endpoint: GET /api/grievances/track/:trackingId
+
+Public endpoint (no auth required)
+
+🧩 STEP 4: ADMIN ANALYTICS (ADMIN ONLY)
+Files:
+
+Admin dashboard components
+
+Rules:
+
+Do NOT compute analytics on frontend
+
+Fetch analytics ONLY from backend
+
+Endpoint:
+
+GET /api/analytics/stats
+
+🧩 STEP 5: REAL-TIME WEBSOCKET INTEGRATION
+Dependency:
+
+socket.io-client
+
+Create file:
+
+src/services/websocket.ts
+
+Requirements:
+
+Connect to http://localhost:5001
+
+Authenticate socket using JWT token
+
+Subscribe and listen to:
+
+grievance:update
+
+grievance:new
+
+analytics:update
+
+Update frontend state in real time
+
+Properly clean up socket on unmount
+
+🧩 STEP 6: GLOBAL ERROR HANDLING
+Rules:
+
+On 401 Unauthorized response:
+
+Remove auth_token
+
+Remove grievance_user
+
+Redirect to /login
+
+🧪 FINAL VALIDATION (MANDATORY)
+
+After completing the task:
+
+List every file modified
+
+Explain exactly what changed in each file
+
+Explicitly confirm:
+
+UI unchanged
+
+Styling unchanged
+
+Routing unchanged
+
+Any deviation from .md files or UI changes = FAILURE.
