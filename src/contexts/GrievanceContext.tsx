@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { apiRequest } from '@/lib/api';
 
 export type GrievanceStatus = 'pending' | 'in-progress' | 'resolved' | 'escalated';
 export type GrievanceCategory = 'water-supply' | 'road-maintenance' | 'garbage' | 'electricity' | 'drainage' | 'other';
@@ -47,157 +48,128 @@ const CATEGORIES: { value: GrievanceCategory; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
-// Generate mock data
-const generateMockGrievances = (): Grievance[] => {
-  const mockData: Grievance[] = [];
-  const statuses: GrievanceStatus[] = ['pending', 'in-progress', 'resolved', 'escalated'];
-  const priorities: Priority[] = ['low', 'medium', 'high', 'critical'];
-  
-  for (let i = 1; i <= 50; i++) {
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)].value;
-    const ward = THANE_WARDS[Math.floor(Math.random() * THANE_WARDS.length)];
-    const createdAt = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-    
-    // Thane coordinates approximate range
-    const latitude = 19.15 + Math.random() * 0.15;
-    const longitude = 72.95 + Math.random() * 0.1;
-    
-    mockData.push({
-      id: `grievance-${i}`,
-      trackingId: `TMC${String(2024001 + i).padStart(7, '0')}`,
-      citizenId: '1',
-      citizenName: `Citizen ${i}`,
-      category,
-      ward,
-      description: `Issue regarding ${category.replace('-', ' ')} in ${ward} ward. Requires immediate attention.`,
-      status,
-      priority: priorities[Math.floor(Math.random() * priorities.length)],
-      latitude,
-      longitude,
-      createdAt,
-      updatedAt: new Date(createdAt.getTime() + Math.random() * 5 * 24 * 60 * 60 * 1000),
-      assignedTo: status !== 'pending' ? 'Municipal Officer' : undefined,
-      timeline: [
-        {
-          id: '1',
-          status: 'pending',
-          message: 'Complaint registered successfully',
-          timestamp: createdAt,
-          by: 'System'
-        },
-        ...(status !== 'pending' ? [{
-          id: '2',
-          status: 'in-progress' as GrievanceStatus,
-          message: 'Assigned to field officer for inspection',
-          timestamp: new Date(createdAt.getTime() + 24 * 60 * 60 * 1000),
-          by: 'Admin'
-        }] : []),
-        ...(status === 'resolved' ? [{
-          id: '3',
-          status: 'resolved' as GrievanceStatus,
-          message: 'Issue has been resolved',
-          timestamp: new Date(createdAt.getTime() + 3 * 24 * 60 * 60 * 1000),
-          by: 'Field Officer'
-        }] : [])
-      ]
-    });
-  }
-  return mockData;
-};
-
 interface GrievanceContextType {
   grievances: Grievance[];
-  addGrievance: (data: Partial<Grievance>) => Grievance;
-  updateGrievance: (id: string, data: Partial<Grievance>) => void;
-  getGrievancesByUser: (userId: string) => Grievance[];
-  getGrievanceByTrackingId: (trackingId: string) => Grievance | undefined;
+  addGrievance: (data: Partial<Grievance>) => Promise<Grievance>;
+  updateGrievance: (id: string, data: Partial<Grievance>) => Promise<void>;
+  getGrievancesByUser: (userId: string) => Promise<Grievance[]>;
+  getGrievanceByTrackingId: (trackingId: string) => Promise<Grievance | undefined>;
   wards: string[];
   categories: typeof CATEGORIES;
-  getStats: () => {
-    total: number;
-    pending: number;
-    inProgress: number;
-    resolved: number;
-    escalated: number;
-    byWard: Record<string, number>;
-    byCategory: Record<string, number>;
-    avgResolutionDays: number;
-  };
+  getStats: () => Promise<any>;
 }
 
 const GrievanceContext = createContext<GrievanceContextType | undefined>(undefined);
 
 export function GrievanceProvider({ children }: { children: ReactNode }) {
-  const [grievances, setGrievances] = useState<Grievance[]>(generateMockGrievances);
+  const [grievances, setGrievances] = useState<Grievance[]>([]);
 
-  const addGrievance = (data: Partial<Grievance>): Grievance => {
-    const trackingId = `TMC${String(2024000 + grievances.length + 1).padStart(7, '0')}`;
-    const newGrievance: Grievance = {
-      id: `grievance-${Date.now()}`,
-      trackingId,
-      citizenId: data.citizenId || '',
-      citizenName: data.citizenName || '',
-      category: data.category || 'other',
-      ward: data.ward || '',
-      description: data.description || '',
-      status: 'pending',
-      priority: 'medium',
-      imageUrl: data.imageUrl,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      timeline: [{
-        id: '1',
-        status: 'pending',
-        message: 'Complaint registered successfully',
-        timestamp: new Date(),
-        by: 'System'
-      }]
-    };
-    setGrievances(prev => [newGrievance, ...prev]);
-    return newGrievance;
-  };
-
-  const updateGrievance = (id: string, data: Partial<Grievance>) => {
-    setGrievances(prev => prev.map(g => 
-      g.id === id ? { ...g, ...data, updatedAt: new Date() } : g
-    ));
-  };
-
-  const getGrievancesByUser = (userId: string) => {
-    return grievances.filter(g => g.citizenId === userId);
-  };
-
-  const getGrievanceByTrackingId = (trackingId: string) => {
-    return grievances.find(g => g.trackingId.toLowerCase() === trackingId.toLowerCase());
-  };
-
-  const getStats = () => {
-    const total = grievances.length;
-    const pending = grievances.filter(g => g.status === 'pending').length;
-    const inProgress = grievances.filter(g => g.status === 'in-progress').length;
-    const resolved = grievances.filter(g => g.status === 'resolved').length;
-    const escalated = grievances.filter(g => g.status === 'escalated').length;
-
-    const byWard: Record<string, number> = {};
-    const byCategory: Record<string, number> = {};
-
-    grievances.forEach(g => {
-      byWard[g.ward] = (byWard[g.ward] || 0) + 1;
-      byCategory[g.category] = (byCategory[g.category] || 0) + 1;
+  const addGrievance = async (data: Partial<Grievance>): Promise<Grievance> => {
+    const formData = new FormData();
+    formData.append('category', data.category || '');
+    formData.append('ward', data.ward || '');
+    formData.append('description', data.description || '');
+    formData.append('priority', data.priority || 'medium');
+    if (data.latitude) formData.append('latitude', data.latitude.toString());
+    if (data.longitude) formData.append('longitude', data.longitude.toString());
+    if (data.imageUrl) {
+      const blob = await fetch(data.imageUrl).then(r => r.blob());
+      formData.append('image', blob, 'image.jpg');
+    }
+    
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch('http://localhost:5001/api/grievances', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
     });
+    
+    const result = await response.json();
+    if (response.ok) {
+      const newGrievance = {
+        ...result.data,
+        createdAt: new Date(result.data.createdAt),
+        updatedAt: new Date(result.data.updatedAt),
+        timeline: result.data.timeline.map((e: any) => ({
+          ...e,
+          timestamp: new Date(e.timestamp)
+        }))
+      };
+      setGrievances(prev => [newGrievance, ...prev]);
+      return newGrievance;
+    }
+    throw new Error(result.message);
+  };
 
-    const resolvedGrievances = grievances.filter(g => g.status === 'resolved');
-    const avgResolutionDays = resolvedGrievances.length > 0
-      ? resolvedGrievances.reduce((acc, g) => {
-          const days = (g.updatedAt.getTime() - g.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-          return acc + days;
-        }, 0) / resolvedGrievances.length
-      : 0;
+  const updateGrievance = async (id: string, data: Partial<Grievance>) => {
+    const response = await apiRequest(`/grievances/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      setGrievances(prev => prev.map(g => 
+        g.id === id ? { 
+          ...result.data,
+          createdAt: new Date(result.data.createdAt),
+          updatedAt: new Date(result.data.updatedAt),
+          timeline: result.data.timeline.map((e: any) => ({
+            ...e,
+            timestamp: new Date(e.timestamp)
+          }))
+        } : g
+      ));
+    }
+  };
 
-    return { total, pending, inProgress, resolved, escalated, byWard, byCategory, avgResolutionDays };
+  const getGrievancesByUser = async (userId: string) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(
+      `http://localhost:5001/api/grievances?citizenId=${userId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    
+    const result = await response.json();
+    const data = (result.data || []).map((g: any) => ({
+      ...g,
+      createdAt: new Date(g.createdAt),
+      updatedAt: new Date(g.updatedAt),
+      timeline: g.timeline.map((e: any) => ({
+        ...e,
+        timestamp: new Date(e.timestamp)
+      }))
+    }));
+    setGrievances(data);
+    return data;
+  };
+
+  const getGrievanceByTrackingId = async (trackingId: string) => {
+    const response = await fetch(
+      `http://localhost:5001/api/grievances/track/${trackingId}`
+    );
+    
+    const result = await response.json();
+    if (result.data) {
+      return {
+        ...result.data,
+        createdAt: new Date(result.data.createdAt),
+        updatedAt: new Date(result.data.updatedAt),
+        timeline: result.data.timeline.map((e: any) => ({
+          ...e,
+          timestamp: new Date(e.timestamp)
+        }))
+      };
+    }
+    return undefined;
+  };
+
+  const getStats = async () => {
+    const response = await apiRequest('/analytics/stats');
+    const result = await response.json();
+    return result.data;
   };
 
   return (

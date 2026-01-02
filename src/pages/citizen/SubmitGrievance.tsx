@@ -89,22 +89,49 @@ export default function SubmitGrievance() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('ward', formData.ward);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('latitude', selectedLocation.lat.toString());
+      formDataToSend.append('longitude', selectedLocation.lng.toString());
+      formDataToSend.append('priority', 'medium');
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
+      }
 
-    const newGrievance = addGrievance({
-      citizenId: user?.id || '',
-      citizenName: user?.name || '',
-      category: formData.category as GrievanceCategory,
-      ward: formData.ward,
-      description: formData.description,
-      imageUrl: imagePreview || undefined,
-      latitude: selectedLocation.lat,
-      longitude: selectedLocation.lng,
-    });
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('http://localhost:5001/api/grievances', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formDataToSend,
+      });
 
-    setSubmittedId(newGrievance.trackingId);
-    setIsSubmitting(false);
+      const result = await response.json();
+      
+      if (response.ok) {
+        setSubmittedId(result.data.tracking_id);
+        toast({
+          title: "Success",
+          description: "Grievance submitted successfully!",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to submit grievance",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while submitting",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submittedId) {

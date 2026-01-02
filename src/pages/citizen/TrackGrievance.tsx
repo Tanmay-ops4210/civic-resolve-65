@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { connectWebSocket, subscribeToGrievance, unsubscribeFromGrievance } from '@/services/websocket';
 import { 
   Search, 
   MapPin, 
@@ -34,11 +35,41 @@ export default function TrackGrievance() {
     }
   }, [searchParams]);
 
-  const handleSearch = (id?: string) => {
+  useEffect(() => {
+    if (grievance?.trackingId) {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        connectWebSocket(token);
+        subscribeToGrievance(grievance.trackingId, (update) => {
+          setGrievance(prev => {
+            if (prev && prev.trackingId === update.data.tracking_id) {
+              return {
+                ...update.data,
+                trackingId: update.data.tracking_id,
+                createdAt: new Date(update.data.createdAt),
+                updatedAt: new Date(update.data.updatedAt),
+                timeline: update.data.timeline.map((e: any) => ({
+                  ...e,
+                  timestamp: new Date(e.timestamp)
+                }))
+              };
+            }
+            return prev;
+          });
+        });
+      }
+      
+      return () => {
+        unsubscribeFromGrievance(grievance.trackingId);
+      };
+    }
+  }, [grievance?.trackingId]);
+
+  const handleSearch = async (id?: string) => {
     const searchId = id || trackingId;
     if (!searchId.trim()) return;
     
-    const found = getGrievanceByTrackingId(searchId.trim());
+    const found = await getGrievanceByTrackingId(searchId.trim());
     setGrievance(found || null);
     setSearched(true);
   };
